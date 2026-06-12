@@ -4,16 +4,25 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from quiz.constants import (
+    CATEGORY_TITLE_MAX_LENGTH,
+    CORRECT_ANSWER_MAX_LENGTH,
     CORRECT_ANSWER_VALIDATION_ERROR,
+    DESCRIPTION_MAX_LENGTH,
+    DIFFICULTY_MAX_LENGTH,
+    EXPLANATION_MAX_LENGTH,
     MIN_QUESTION_OPTIONS,
     OPTIONS_VALIDATION_ERROR,
+    QUESTION_TEXT_MAX_LENGTH,
+    QUIZ_TITLE_MAX_LENGTH,
 )
 
 
 class Category(models.Model):
     """Модель категории вопросов."""
 
-    title = models.CharField('название', max_length=100)
+    title = models.CharField(
+        'название', max_length=CATEGORY_TITLE_MAX_LENGTH, unique=True
+    )
 
     class Meta:
         """Метаданные модели категории."""
@@ -29,9 +38,9 @@ class Category(models.Model):
 class Quiz(models.Model):
     """Модель квиза."""
 
-    title = models.CharField('название', max_length=200)
+    title = models.CharField('название', max_length=QUIZ_TITLE_MAX_LENGTH)
     description = models.CharField(
-        'описание', max_length=500, blank=True, default=''
+        'описание', max_length=DESCRIPTION_MAX_LENGTH, blank=True, default=''
     )
 
     class Meta:
@@ -68,17 +77,26 @@ class Question(models.Model):
         related_name='questions',
         verbose_name='категория',
     )
-    text = models.CharField('текст вопроса', max_length=500)
+    text = models.CharField(
+        'текст вопроса', max_length=QUESTION_TEXT_MAX_LENGTH
+    )
     description = models.CharField(
-        'описание', max_length=500, blank=True, default=''
+        'описание', max_length=DESCRIPTION_MAX_LENGTH, blank=True, default=''
     )
     options = models.JSONField('варианты ответа')
-    correct_answer = models.CharField('правильный ответ', max_length=500)
+    correct_answer = models.CharField(
+        'правильный ответ', max_length=CORRECT_ANSWER_MAX_LENGTH
+    )
     explanation = models.CharField(
-        'объяснение ответа', max_length=250, blank=True, default=''
+        'объяснение ответа',
+        max_length=EXPLANATION_MAX_LENGTH,
+        blank=True,
+        default='',
     )
     difficulty = models.CharField(
-        'сложность', max_length=6, choices=Difficulty.choices
+        'сложность',
+        max_length=DIFFICULTY_MAX_LENGTH,
+        choices=Difficulty.choices,
     )
 
     class Meta:

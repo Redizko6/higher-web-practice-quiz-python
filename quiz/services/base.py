@@ -3,6 +3,7 @@
 from typing import Generic, TypeVar
 
 from django.db import models
+from django.shortcuts import get_object_or_404
 
 ModelT = TypeVar('ModelT', bound=models.Model)
 
@@ -19,7 +20,7 @@ class BaseModelService(Generic[ModelT]):
 
     def get_object(self, object_id: int) -> ModelT:
         """Вернуть объект модели по идентификатору."""
-        return self.model.objects.get(pk=object_id)
+        return get_object_or_404(self.model, pk=object_id)
 
     def create_object(self, data: dict) -> ModelT:
         """Проверить и сохранить новый объект модели."""

@@ -21,7 +21,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
         model = Category
         fields = CATEGORY_FIELDS
-        read_only_fields = ('id',)
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -32,7 +31,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 
         model = Question
         fields = QUESTION_FIELDS
-        read_only_fields = ('id',)
 
     def validate_options(self, options: object) -> list[object]:
         """Проверить, что передано не менее двух вариантов ответа."""
@@ -68,4 +66,3 @@ class QuizSerializer(serializers.ModelSerializer):
 
         model = Quiz
         fields = QUIZ_FIELDS
-        read_only_fields = ('id',)

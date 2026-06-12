@@ -22,7 +22,8 @@ class CategoryService(BaseModelService[Category], AbstractCategoryService):
 
     def create_category(self, title: str) -> Category:
         """Создать категорию."""
-        return self.create_object({'title': title})
+        category, _ = self.model.objects.get_or_create(title=title)
+        return category
 
     def update_category(self, category_id: int, data: dict) -> Category:
         """Обновить категорию."""

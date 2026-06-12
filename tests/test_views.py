@@ -1,5 +1,7 @@
 """Тесты REST API категорий, квизов и вопросов."""
 
+from http import HTTPStatus
+
 import pytest
 from django.test import Client
 
@@ -18,7 +20,18 @@ class TestCategoryAPI:
             {'title': 'History'},
             content_type='application/json',
         )
-        assert response.status_code == 201
+        assert response.status_code == HTTPStatus.CREATED
+
+    def test_create_existing_category_does_not_duplicate(
+        self, client: Client, category: Category
+    ) -> None:
+        """Повторное создание категории не добавляет дубликат."""
+        client.post(
+            '/api/category',
+            {'title': category.title},
+            content_type='application/json',
+        )
+        assert Category.objects.filter(title=category.title).count() == 1
 
     def test_list_categories_content(
         self, client: Client, category: Category
@@ -52,11 +65,16 @@ class TestCategoryAPI:
         self, client: Client, category: Category
     ) -> None:
         """Удаление категории возвращает 204."""
-        assert client.delete(f'/api/category/{category.id}').status_code == 204
+        assert (
+            client.delete(f'/api/category/{category.id}').status_code
+            == HTTPStatus.NO_CONTENT
+        )
 
     def test_get_missing_category_status(self, client: Client) -> None:
         """Для отсутствующей категории возвращается 404."""
-        assert client.get('/api/category/999').status_code == 404
+        assert (
+            client.get('/api/category/999').status_code == HTTPStatus.NOT_FOUND
+        )
 
 
 class TestQuizAPI:
@@ -67,7 +85,7 @@ class TestQuizAPI:
         response = client.post(
             '/api/quiz', {'title': 'History'}, content_type='application/json'
         )
-        assert response.status_code == 201
+        assert response.status_code == HTTPStatus.CREATED
 
     def test_list_quizzes_content(self, client: Client, quiz: Quiz) -> None:
         """Список содержит созданный квиз."""
@@ -88,7 +106,10 @@ class TestQuizAPI:
 
     def test_delete_quiz_status(self, client: Client, quiz: Quiz) -> None:
         """Удаление квиза возвращает 204."""
-        assert client.delete(f'/api/quiz/{quiz.id}').status_code == 204
+        assert (
+            client.delete(f'/api/quiz/{quiz.id}').status_code
+            == HTTPStatus.NO_CONTENT
+        )
 
     def test_get_quizzes_by_title_content(
         self, client: Client, quiz: Quiz
@@ -113,7 +134,7 @@ class TestQuizAPI:
         """Пустой квиз возвращает 404."""
         assert (
             client.get(f'/api/quiz/{quiz.id}/random_question').status_code
-            == 404
+            == HTTPStatus.NOT_FOUND
         )
 
 
@@ -127,7 +148,7 @@ class TestQuestionAPI:
         response = client.post(
             '/api/question', question_data, content_type='application/json'
         )
-        assert response.status_code == 201
+        assert response.status_code == HTTPStatus.CREATED
 
     def test_create_question_with_one_option_status(
         self, client: Client, question_data: dict
@@ -137,7 +158,7 @@ class TestQuestionAPI:
         response = client.post(
             '/api/question', question_data, content_type='application/json'
         )
-        assert response.status_code == 400
+        assert response.status_code == HTTPStatus.BAD_REQUEST
 
     def test_create_question_with_unknown_answer_status(
         self, client: Client, question_data: dict
@@ -147,7 +168,7 @@ class TestQuestionAPI:
         response = client.post(
             '/api/question', question_data, content_type='application/json'
         )
-        assert response.status_code == 400
+        assert response.status_code == HTTPStatus.BAD_REQUEST
 
     def test_list_questions_content(
         self, client: Client, question: Question
@@ -187,7 +208,10 @@ class TestQuestionAPI:
         self, client: Client, question: Question
     ) -> None:
         """Удаление вопроса возвращает 204."""
-        assert client.delete(f'/api/question/{question.id}').status_code == 204
+        assert (
+            client.delete(f'/api/question/{question.id}').status_code
+            == HTTPStatus.NO_CONTENT
+        )
 
     def test_get_questions_by_text_content(
         self, client: Client, question: Question
@@ -227,4 +251,4 @@ class TestQuestionAPI:
             {'answer': 'Mercury'},
             content_type='application/json',
         )
-        assert response.status_code == 404
+        assert response.status_code == HTTPStatus.NOT_FOUND

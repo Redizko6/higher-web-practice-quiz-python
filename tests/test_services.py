@@ -1,6 +1,7 @@
 """Тесты сервисного слоя."""
 
 import pytest
+from django.http import Http404
 
 from quiz.models import Category, Question, Quiz
 from quiz.services.category import CategoryService
@@ -27,6 +28,15 @@ class TestCategoryService:
         """Сервис создаёт категорию."""
         assert self.service.create_category('History').title == 'History'
 
+    def test_create_existing_category(self, category: Category) -> None:
+        """Сервис возвращает существующую категорию без дубликата."""
+        assert self.service.create_category(category.title) == category
+
+    def test_get_missing_category(self) -> None:
+        """Сервис сообщает об отсутствующей категории через HTTP 404."""
+        with pytest.raises(Http404):
+            self.service.get_category(999)
+
     def test_update_category(self, category: Category) -> None:
         """Сервис изменяет категорию."""
         assert (
@@ -38,8 +48,9 @@ class TestCategoryService:
 
     def test_delete_category(self, category: Category) -> None:
         """Сервис удаляет категорию."""
+        initial_count = Category.objects.count()
         self.service.delete_category(category.id)
-        assert Category.objects.count() == 0
+        assert Category.objects.count() == initial_count - 1
 
 
 class TestQuizService:
@@ -74,8 +85,9 @@ class TestQuizService:
 
     def test_delete_quiz(self, quiz: Quiz) -> None:
         """Сервис удаляет квиз."""
+        initial_count = Quiz.objects.count()
         self.service.delete_quiz(quiz.id)
-        assert Quiz.objects.count() == 0
+        assert Quiz.objects.count() == initial_count - 1
 
 
 class TestQuestionService:
@@ -119,8 +131,9 @@ class TestQuestionService:
 
     def test_delete_question(self, question: Question) -> None:
         """Сервис удаляет вопрос."""
+        initial_count = Question.objects.count()
         self.service.delete_question(question.id)
-        assert Question.objects.count() == 0
+        assert Question.objects.count() == initial_count - 1
 
     def test_check_correct_answer(self, question: Question) -> None:
         """Сервис принимает правильный ответ."""
